@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>E-Commerce Analytics</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .card h2 {
+            margin: 0;
+            font-size: 36px;
+        }
+
+        .card p {
+            color: #666;
+            font-size: 18px;
+        }
+
+        .back {
+            display: block;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .back a {
+            text-decoration: none;
+            background: #417690;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Smart E-Commerce Analytics</h1>
+
+    <div class="dashboard">
+
+        <div class="card">
+            <h2>{{ total_users }}</h2>
+            <p>Total Users</p>
+        </div>
+
+        <div class="card">
+            <h2>{{ total_products }}</h2>
+            <p>Total Products</p>
+        </div>
+
+        <div class="card">
+            <h2>{{ total_cart_items }}</h2>
+            <p>Cart Items</p>
+        </div>
+
+        <div class="card">
+            <h2>{{ total_stock }}</h2>
+            <p>Total Stock</p>
+        </div>
+
+        <div class="card">
+            <h2>{{ total_cart_quantity }}</h2>
+            <p>Items in Carts</p>
+        </div>
+
+        <div class="card">
+            <h2>₹{{ inventory_value }}</h2>
+            <p>Inventory Value</p>
+        </div>
+
+    </div>
+
+    <div class="back">
+        <a href="/admin/">Back to Django Admin</a>
+    </div>
+
+</body>
+</html>

@@ -1,4 +1,5 @@
 import os
+
 import jwt
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -92,7 +93,8 @@ def login(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
         )
-
+    print("LOGIN INPUT:", user_data.email, user_data.password)
+    print("LOGIN USER:", user.id, user.email, user.role)
     if not verify_password(
         user_data.password,
         user.password

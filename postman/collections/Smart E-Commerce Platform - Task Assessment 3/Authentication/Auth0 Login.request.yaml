@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{base_url}}/auth/auth0"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "token": "{{auth0_token}}"
+    }
+order: 5000

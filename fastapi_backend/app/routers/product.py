@@ -12,19 +12,15 @@ router = APIRouter(
 )
 
 
-# Get all products
 @router.get("/")
 def get_products(
     db: Session = Depends(get_db)
 ):
-    products = db.scalars(
+    return db.scalars(
         select(Product)
     ).all()
 
-    return products
 
-
-# Get single product
 @router.get("/{product_id}")
 def get_product(
     product_id: int,
@@ -34,14 +30,13 @@ def get_product(
 
     if not product:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=404,
             detail="Product not found"
         )
 
     return product
 
 
-# Create product - ADMIN ONLY
 @router.post(
     "/",
     status_code=status.HTTP_201_CREATED
@@ -70,7 +65,6 @@ def create_product(
     return product
 
 
-# Update product - ADMIN ONLY
 @router.put("/{product_id}")
 def update_product(
     product_id: int,
@@ -86,7 +80,7 @@ def update_product(
 
     if not product:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=404,
             detail="Product not found"
         )
 
@@ -102,7 +96,6 @@ def update_product(
     return product
 
 
-# Delete product - ADMIN ONLY
 @router.delete("/{product_id}")
 def delete_product(
     product_id: int,
@@ -113,7 +106,7 @@ def delete_product(
 
     if not product:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=404,
             detail="Product not found"
         )
 

@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{base_url}}/products/?name=Postman%20Product&description=RBAC%20Test&price=100&stock=5&images=test.jpg"
+method: POST
+headers:
+  Authorization: Bearer {{access_token}}
+queryParams:
+  name: Postman%20Product
+  description: RBAC%20Test
+  price: "100"
+  stock: "5"
+  images: test.jpg
+order: 3000

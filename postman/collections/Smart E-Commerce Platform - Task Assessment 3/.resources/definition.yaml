@@ -1,0 +1,8 @@
+$kind: collection
+name: Smart E-Commerce Platform - Task Assessment 3
+description: Authentication, products, cart and orders API collection.
+variables:
+  base_url: http://127.0.0.1:8000
+  access_token: ""
+  refresh_token: ""
+  auth0_token: ""
