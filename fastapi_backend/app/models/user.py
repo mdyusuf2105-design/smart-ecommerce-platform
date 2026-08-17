@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import DateTime, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.database import Base
 
@@ -41,4 +41,15 @@ class User(Base):
         DateTime,
         default=datetime.utcnow,
         nullable=False
+    )
+
+    # =====================================================
+    # USER → CART RELATIONSHIP
+    # One user can have many cart items
+    # =====================================================
+
+    cart_items = relationship(
+        "Cart",
+        back_populates="user",
+        cascade="all, delete-orphan"
     )

@@ -1,5 +1,5 @@
 from sqlalchemy import Float, Integer, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.database import Base
 
@@ -14,6 +14,17 @@ class Product(Base):
 
     name: Mapped[str] = mapped_column(
         String(200),
+        nullable=False
+    )
+
+    category: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True
+    )
+
+    popularity: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
         nullable=False
     )
 
@@ -36,4 +47,14 @@ class Product(Base):
     images: Mapped[str | None] = mapped_column(
         Text,
         nullable=True
+    )
+
+    # =====================================================
+    # PRODUCT → CART RELATIONSHIP
+    # One product can appear in many cart items
+    # =====================================================
+
+    cart_items = relationship(
+        "Cart",
+        back_populates="product"
     )
