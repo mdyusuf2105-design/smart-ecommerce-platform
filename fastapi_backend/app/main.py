@@ -5,10 +5,12 @@ from app.models.user import User
 from app.models.product import Product
 from app.models.cart import Cart
 from app.models.order import Order
+from app.models.payment import Payment
 from app.routers.auth import router as auth_router
 from app.routers.product import router as product_router
 from app.routers.cart import router as cart_router
 from app.routers.order import router as order_router
+from app.routers.checkout import router as checkout_router
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -32,7 +34,7 @@ app.include_router(auth_router)
 app.include_router(product_router)
 app.include_router(cart_router)
 app.include_router(order_router)
-
+app.include_router(checkout_router)
 
 @app.get("/")
 def root():
