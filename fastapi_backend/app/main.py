@@ -11,6 +11,7 @@ from app.routers.product import router as product_router
 from app.routers.cart import router as cart_router
 from app.routers.order import router as order_router
 from app.routers.checkout import router as checkout_router
+from app.routers.payment import router as payment_router
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -35,6 +36,7 @@ app.include_router(product_router)
 app.include_router(cart_router)
 app.include_router(order_router)
 app.include_router(checkout_router)
+app.include_router(payment_router)
 
 @app.get("/")
 def root():

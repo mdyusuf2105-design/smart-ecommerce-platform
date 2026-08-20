@@ -1,3 +1,8 @@
+import os
+
+import stripe
+from dotenv import load_dotenv
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -12,6 +17,8 @@ from app.models.payment import Payment
 from app.models.user import User
 
 
+load_dotenv()
+
 router = APIRouter(
     prefix="/checkout",
     tags=["Checkout"],
@@ -23,7 +30,10 @@ def checkout(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    # =====================================================
     # 1. Get user's cart
+    # =====================================================
+
     cart_items = db.scalars(
         select(Cart).where(
             Cart.user_id == current_user.id
@@ -36,7 +46,10 @@ def checkout(
             detail="Cart is empty",
         )
 
+    # =====================================================
     # 2. Validate cart and calculate total
+    # =====================================================
+
     total_price = 0.0
     validated_items = []
 
@@ -75,7 +88,10 @@ def checkout(
             "item_total": item_total,
         })
 
-    # 3. Create one order
+    # =====================================================
+    # 3. Create Order
+    # =====================================================
+
     order = Order(
         user_id=current_user.id,
         total=total_price,
@@ -86,7 +102,10 @@ def checkout(
     db.add(order)
     db.flush()
 
-    # 4. Create order items
+    # =====================================================
+    # 4. Create Order Items
+    # =====================================================
+
     for item in validated_items:
 
         order_item = OrderItem(
@@ -101,30 +120,122 @@ def checkout(
 
     db.flush()
 
-    # 5. Create mock payment
-    transaction_id = f"mock_txn_{order.id}"
+    order_id = order.id
 
-    payment = Payment(
-        order_id=order.id,
-        amount=total_price,
-        payment_method="mock_stripe",
-        transaction_id=transaction_id,
-        status="pending",
-    )
+    # =====================================================
+    # 5. Stripe configuration
+    # =====================================================
 
-    db.add(payment)
+    stripe_secret_key = os.getenv("STRIPE_SECRET_KEY")
 
-    # 6. Commit everything
-    db.commit()
+    if not stripe_secret_key:
+        db.rollback()
 
-    # 7. Return mock checkout response
-    return {
-        "message": "Checkout initialized successfully",
-        "order_id": order.id,
-        "amount": total_price,
-        "currency": "INR",
-        "payment_status": "pending",
-        "order_status": "pending",
-        "transaction_id": transaction_id,
-        "checkout_url": "https://checkout.stripe.com/example"
-    }
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Stripe secret key is not configured",
+        )
+
+    stripe.api_key = stripe_secret_key
+
+    # =====================================================
+    # 6. Create Stripe Checkout Session
+    # =====================================================
+
+    try:
+
+        line_items = []
+
+        for item in validated_items:
+
+            product = item["product"]
+
+            line_items.append({
+                "price_data": {
+                    "currency": "inr",
+                    "product_data": {
+                        "name": product.name,
+                    },
+                    "unit_amount": int(
+                        product.price * 100
+                    ),
+                },
+                "quantity": item["quantity"],
+            })
+
+        checkout_session = stripe.checkout.Session.create(
+            mode="payment",
+
+            line_items=line_items,
+
+            success_url=(
+                "http://localhost:5173/payment-success"
+            ),
+
+            cancel_url=(
+                "http://localhost:5173/payment-cancelled"
+            ),
+
+            # Metadata on Checkout Session
+            metadata={
+                "order_id": str(order_id),
+                "user_id": str(current_user.id),
+            },
+
+            # Metadata on the PaymentIntent automatically
+            # created by Stripe Checkout
+            payment_intent_data={
+                "metadata": {
+                    "order_id": str(order_id),
+                    "user_id": str(current_user.id),
+                }
+            },
+        )
+
+        # =================================================
+        # 7. Create Payment Record
+        # =================================================
+
+        # We temporarily store the Checkout Session ID.
+        # The webhook will replace it with the real
+        # PaymentIntent ID after successful payment.
+
+        payment = Payment(
+            order_id=order_id,
+            amount=total_price,
+            payment_method="stripe",
+            transaction_id=checkout_session.id,
+            status="pending",
+        )
+
+        db.add(payment)
+
+        # =================================================
+        # 8. Commit
+        # =================================================
+
+        db.commit()
+
+        # =================================================
+        # 9. Return response
+        # =================================================
+
+        return {
+            "message": "Checkout session created successfully",
+            "order_id": order_id,
+            "amount": total_price,
+            "currency": "INR",
+            "payment_status": "pending",
+            "order_status": "pending",
+            "checkout_session_id": checkout_session.id,
+            "checkout_url": checkout_session.url,
+        }
+
+    except stripe.StripeError as e:
+
+        db.rollback()
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
